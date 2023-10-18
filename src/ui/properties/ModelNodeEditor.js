@@ -52,6 +52,10 @@ export default class ModelNodeEditor extends Component {
     this.props.editor.setPropertySelected("billboard", billboard);
   };
 
+  onChangeInteractive = interactive => {
+    this.props.editor.setPropertySelected("interactive", interactive);
+  };
+
   isAnimationPropertyDisabled() {
     const { multiEdit, editor, node } = this.props;
 
@@ -98,6 +102,9 @@ export default class ModelNodeEditor extends Component {
         </InputGroup>
         <InputGroup name="Billboard" info="Model always faces user in Hubs. Does not billboard in Spoke.">
           <BooleanInput value={node.billboard} onChange={this.onChangeBillboard} />
+        </InputGroup>
+        <InputGroup name="Interactive" info="Users can directly interact with this model">
+          <BooleanInput value={node.interactive} onChange={this.onChangeInteractive} />
         </InputGroup>
         {node.model && <GLTFInfo node={node} />}
         <AttributionNodeEditor name="Attribution" {...this.props} />

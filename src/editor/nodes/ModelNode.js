@@ -79,6 +79,9 @@ export default class ModelNode extends EditorNodeMixin(Model) {
         if (json.components.find(c => c.name === "billboard")) {
           node.billboard = true;
         }
+        if (json.components.find(c => c.name === "interactive")) {
+          node.interactive = true;
+        }
       })()
     );
 
@@ -98,6 +101,7 @@ export default class ModelNode extends EditorNodeMixin(Model) {
     this.stats = defaultStats;
     this.gltfJson = null;
     this._billboard = false;
+    this._interactive = false;
   }
 
   // Overrides Model's src property and stores the original (non-resolved) url.
@@ -114,9 +118,17 @@ export default class ModelNode extends EditorNodeMixin(Model) {
     return this._billboard;
   }
 
+  get interactive() {
+    return this._interactive;
+  }
+
   set billboard(value) {
     this._billboard = value;
     this.updateStaticModes();
+  }
+
+  set interactive(value) {
+    this._interactive = value;
   }
 
   // Overrides Model's loadGLTF method and uses the Editor's gltf cache.
@@ -374,6 +386,10 @@ export default class ModelNode extends EditorNodeMixin(Model) {
       components.billboard = {};
     }
 
+    if (this.interactive) {
+      components.interactive = {};
+    }
+
     return super.serialize(components);
   }
 
@@ -394,6 +410,7 @@ export default class ModelNode extends EditorNodeMixin(Model) {
     this.walkable = source.walkable;
     this.combine = source.combine;
     this._billboard = source._billboard;
+    this._interactive = source._interactive;
 
     this.updateStaticModes();
 
@@ -428,6 +445,48 @@ export default class ModelNode extends EditorNodeMixin(Model) {
 
     if (this.billboard) {
       this.addGLTFComponent("billboard", {});
+    }
+
+    if (this.interactive) {
+      this.addGLTFComponent("grabbable", {
+        cursor: true,
+        hand: true
+      });
+      this.addGLTFComponent("networked", {
+        id: this.uuid
+      });
+
+      this.addGLTFComponent("rigidbody", {
+        type: "dynamic",
+        disableCollision: false,
+        collisionGroup: "objects",
+        collisionMask: ["objects", "triggers", "environment"],
+        mass: 1,
+        linearDamping: 0,
+        angularDamping: 0,
+        linearSleepingThreshold: 0.800000011920929,
+        angularSleepingThreshold: 1,
+        angularFactor: [1, 1, 1]
+      });
+      this.addGLTFComponent("physics-shape", {
+        type: "hull",
+        fit: "all",
+        halfExtents: {
+          x: 0.5,
+          y: 0.5,
+          z: 0.5
+        },
+        minHalfExtent: 0,
+        maxHalfExtent: 1000,
+        sphereRadius: 0.5,
+        offset: {
+          x: 0,
+          y: 0,
+          z: 0
+        },
+        includeInvisible: false
+      });
+      this.addGLTFComponent("networked-transform", {});
     }
   }
 }
